@@ -109,6 +109,14 @@ pub fn build(b: *std.Build) !void {
     // installation directory rather than directly from within the cache directory.
     run_cmd.step.dependOn(b.getInstallStep());
 
+    // Redefine exe's for a check step: https://zigtools.org/zls/guides/build-on-save/
+    const check = b.step("check", "Check if everything compiles");
+
+    for (0..executables_len) |i| {
+        const check_exe = b.addExecutable(.{ .name = executables[i].name, .root_module = executables[i].root_module });
+        check.dependOn(&check_exe.step);
+    }
+
     // Creates an executable that will run `test` blocks from the provided module.
     // Here `mod` needs to define a target, which is why earlier we made sure to
     // set the releative field.
