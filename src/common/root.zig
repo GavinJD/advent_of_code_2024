@@ -16,6 +16,86 @@ pub fn read_input(allocator: std.mem.Allocator, day: u8) ![]const u8 {
     return buf;
 }
 
-// test "basic add functionality" {
-//     try std.testing.expect(add(3, 7) == 10);
-// }
+// ====== GRID ==========
+// TODO: Move to separate file
+
+pub const GRID_DIR: [8][2]i64 = .{ .{ -1, -1 }, .{ -1, 0 }, .{ -1, 1 }, .{ 0, -1 }, .{ 0, 1 }, .{ 1, -1 }, .{ 1, 0 }, .{ 1, 1 } };
+
+pub const Grid = struct {
+    data: []const u8,
+    delim: []const u8,
+    rows: usize,
+    columns: usize,
+
+    pub fn init(input: []const u8, delim: []const u8) @This() {
+        std.debug.assert(delim.len > 0);
+        const columns = std.mem.indexOfScalarPos(u8, input, 0, delim[0]).?;
+        var rows = std.mem.count(u8, input, delim);
+        if (!std.mem.eql(u8, input[input.len - delim.len ..], delim)) {
+            rows += 1;
+        }
+
+        return Grid{
+            .data = input,
+            .delim = delim,
+            .rows = rows,
+            .columns = columns,
+        };
+    }
+
+    pub fn get(self: *const Grid, x: i64, y: i64) ?u8 {
+        if (x < 0 or x >= self.columns) return null;
+        if (y < 0 or y >= self.rows) return null;
+
+        return self.data[@as(usize, @intCast(x)) + (@as(usize, @intCast(y)) * (self.columns + self.delim.len))];
+    }
+};
+
+test "grid constructor normal" {
+    const input = "ABCD\r\nPQRS\r\nLMNO\r\nWXYZ";
+    const grid = Grid.init(input, "\r\n");
+
+    try std.testing.expectEqual(4, grid.rows);
+    try std.testing.expectEqual(4, grid.columns);
+}
+
+test "grid constructor with trailing delimiter" {
+    const input = "ABC\r\nPQR\r\nLMN\r\nXYZ\r\n";
+    const grid = Grid.init(input, "\r\n");
+
+    try std.testing.expectEqual(4, grid.rows);
+    try std.testing.expectEqual(3, grid.columns);
+}
+
+test "grid getter" {
+    const input = "ABC\r\nPQR\r\nLMN\r\nXYZ\r\n";
+    const grid = Grid.init(input, "\r\n");
+
+    try std.testing.expectEqual('A', grid.get(0, 0));
+    try std.testing.expectEqual('B', grid.get(1, 0));
+    try std.testing.expectEqual('C', grid.get(2, 0));
+    try std.testing.expectEqual('P', grid.get(0, 1));
+    try std.testing.expectEqual('Q', grid.get(1, 1));
+    try std.testing.expectEqual('R', grid.get(2, 1));
+
+    try std.testing.expectEqual(null, grid.get(99, 99));
+}
+
+test "iterate all" {
+    const input =
+        \\123456789
+        \\123456789
+        \\123456789
+        \\123456789
+        \\123456789
+    ;
+    const grid = Grid.init(input, "\n");
+
+    for (0..grid.columns) |xu| {
+        for (0..grid.rows) |yu| {
+            const x: i64 = @intCast(xu);
+            const y: i64 = @intCast(yu);
+            try std.testing.expectEqual(@as(u8, @intCast(xu)) + '1', grid.get(x, y));
+        }
+    }
+}
