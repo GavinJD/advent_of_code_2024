@@ -49,6 +49,17 @@ pub const Grid = struct {
 
         return self.data[@as(usize, @intCast(x)) + (@as(usize, @intCast(y)) * (self.columns + self.delim.len))];
     }
+
+    pub fn findFirstPos(self: *const Grid, vals: []const u8) ?[2]i64 {
+        for (0..self.rows) |y| {
+            const start = y * (self.columns + self.delim.len);
+            if (std.mem.indexOfAny(u8, self.data[start..][0..self.columns], vals)) |x| {
+                return .{ @intCast(x), @intCast(y) };
+            }
+        }
+
+        return null;
+    }
 };
 
 test "grid constructor normal" {
@@ -81,13 +92,29 @@ test "grid getter" {
     try std.testing.expectEqual(null, grid.get(99, 99));
 }
 
+test "grid getter 2" {
+    const input =
+        \\01
+        \\23
+        \\45
+        \\67
+        \\89
+    ;
+    const grid = Grid.init(input, "\n");
+
+    try std.testing.expectEqual('2', grid.get(0, 1));
+    try std.testing.expectEqual('4', grid.get(0, 2));
+    try std.testing.expectEqual('5', grid.get(1, 2));
+    try std.testing.expectEqual(null, grid.get(2, 2));
+}
+
 test "iterate all" {
     const input =
-        \\123456789
-        \\123456789
-        \\123456789
-        \\123456789
-        \\123456789
+        \\01
+        \\23
+        \\45
+        \\67
+        \\89
     ;
     const grid = Grid.init(input, "\n");
 
@@ -95,7 +122,7 @@ test "iterate all" {
         for (0..grid.rows) |yu| {
             const x: i64 = @intCast(xu);
             const y: i64 = @intCast(yu);
-            try std.testing.expectEqual(@as(u8, @intCast(xu)) + '1', grid.get(x, y));
+            try std.testing.expectEqual(@as(u8, @intCast(xu + yu * grid.columns)) + '0', grid.get(x, y));
         }
     }
 }
