@@ -16,6 +16,33 @@ pub fn read_input(allocator: std.mem.Allocator, day: u8) ![]const u8 {
     return buf;
 }
 
+pub const Solution = struct { part1: u64, part2: u64 };
+
+// ====== PARSING ========
+pub fn parseNum(input: []const u8, index: *usize) !u64 {
+    const start = index.*;
+
+    while (index.* < input.len and std.ascii.isDigit(input[index.*])) {
+        index.* += 1;
+    }
+
+    if (start == index.*) {
+        return error.InvalidDigit;
+    } else {
+        return try std.fmt.parseInt(u64, input[start..index.*], 10);
+    }
+}
+
+pub fn parseExact(input: []const u8, to_parse: []const u8, index: *usize) !void {
+    if (input.len - index.* - 1 < to_parse.len) return error.ReachedEnd;
+
+    for (to_parse, 0..) |rc, j| {
+        if (input[index.* + j] != rc) return error.NotMatching;
+    }
+
+    index.* += to_parse.len;
+}
+
 // ====== GRID ==========
 // TODO: Move to separate file
 

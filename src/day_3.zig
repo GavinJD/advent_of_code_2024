@@ -30,10 +30,10 @@ fn solve(input: []const u8) struct { part1: u64, part2: u64 } {
 
         if (mul_pos < do_pos and mul_pos < dont_pos and mul_pos != input.len) {
             idx = mul_pos + 4;
-            const n1: u64 = parseNum(input, &idx) catch continue;
-            parseExact(input, ",", &idx) catch continue;
-            const n2: u64 = parseNum(input, &idx) catch continue;
-            parseExact(input, ")", &idx) catch continue;
+            const n1: u64 = lib.parseNum(input, &idx) catch continue;
+            lib.parseExact(input, ",", &idx) catch continue;
+            const n2: u64 = lib.parseNum(input, &idx) catch continue;
+            lib.parseExact(input, ")", &idx) catch continue;
 
             total_always_enabled += n1 * n2;
             if (enabled) total_conditional += n1 * n2;
@@ -49,30 +49,6 @@ fn solve(input: []const u8) struct { part1: u64, part2: u64 } {
     }
 
     return .{ .part1 = total_always_enabled, .part2 = total_conditional };
-}
-
-fn parseNum(s: []const u8, i: *usize) !u64 {
-    const start = i.*;
-
-    while (i.* < s.len and std.ascii.isDigit(s[i.*])) {
-        i.* += 1;
-    }
-
-    if (start == i.*) {
-        return error.InvalidDigit;
-    } else {
-        return try std.fmt.parseInt(u64, s[start..i.*], 10);
-    }
-}
-
-fn parseExact(s: []const u8, ref: []const u8, i: *usize) !void {
-    if (s.len - i.* - 1 < ref.len) return error.ReachedEnd;
-
-    for (ref, 0..) |rc, j| {
-        if (s[i.* + j] != rc) return error.NotMatching;
-    }
-
-    i.* += ref.len;
 }
 
 test "example input" {
