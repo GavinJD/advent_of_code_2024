@@ -1,6 +1,10 @@
 //! By convention, root.zig is the root source file when making a library.
 const std = @import("std");
 
+pub fn HashSet(comptime t: type) type {
+    return std.AutoHashMap(t, void);
+}
+
 pub fn read_input(allocator: std.mem.Allocator, day: u8) ![]const u8 {
     const path = try std.fmt.allocPrint(allocator, "inputs/day_{}.txt", .{day});
     defer allocator.free(path);
