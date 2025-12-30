@@ -91,6 +91,20 @@ pub const Grid = struct {
 
         return null;
     }
+
+    pub fn findAllPosEqualTo(self: *const Grid, val: u8, allocator: std.mem.Allocator) !std.ArrayList([2]i64) {
+        var result = std.ArrayList([2]i64).empty;
+
+        for (0..self.rows) |y| {
+            for (0..self.columns) |x| {
+                if (self.get(@intCast(x), @intCast(y)) == val) {
+                    try result.append(allocator, .{ @intCast(x), @intCast(y) });
+                }
+            }
+        }
+
+        return result;
+    }
 };
 
 test "grid constructor normal" {
